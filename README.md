@@ -1,10 +1,30 @@
-# Import eks kubeconfig
+# Create a EKS cluster and a RDS postgress DB.
+## Configure aws environment in your local machine
+* Configure aws create a `~/.aws/credentials` file and put your credentials in it:
+
+  ```
+  [default]
+  aws_access_key_id=***********
+  aws_secret_access_key=****************************
+  ```
+
+* Create a `~/.aws/config` file
+
+  ```
+  [default]
+  output = json
+  region = us-west-2
+  ```
+
+* Or you can run `aws configure` command and follow the instructions (Note: awscli is required)
+
+## Import eks kubeconfig
 
 ```
 aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
 ```
-# terraform-aws-postgresql-rds
-## Usage
+## terraform-aws-postgresql-rds
+### Usage
 
 ```hcl
 module "postgresql_rds" {
