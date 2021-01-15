@@ -1,3 +1,8 @@
+variable "region" {
+  default     = "us-west-2"
+  type        = string
+  description = "aws region"
+}
 variable "project" {
   default     = "vault"
   type        = string
@@ -151,7 +156,7 @@ variable "deletion_protection" {
 #   description = "List of logs to publish to CloudWatch Logs"
 # }
 
-variable "db_subnet_group" {
+variable "aws_subnet_group" {
   default = ["subnet-83bae0f5", "subnet-7031925b"]
   description = "Subnets for DB"
   
@@ -217,5 +222,5 @@ variable "parameter_group" {
 variable "tags" {
   default     = {}
   type        = map(string)
-  description = "Extra tags to attach to the RDS resources"
+  description = "Extra tags to attach to the resources"
 }

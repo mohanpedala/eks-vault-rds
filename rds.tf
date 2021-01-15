@@ -1,53 +1,10 @@
-#
-# IAM resources
-#
-data "aws_iam_policy_document" "enhanced_monitoring" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["monitoring.rds.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role" "enhanced_monitoring" {
-  name               = "rds${var.environment}EnhancedMonitoringRole"
-  assume_role_policy = data.aws_iam_policy_document.enhanced_monitoring.json
-}
-
-resource "aws_iam_role_policy_attachment" "enhanced_monitoring" {
-  role       = aws_iam_role.enhanced_monitoring.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-}
-
-#
-# Security group resources
-#
-resource "aws_security_group" "postgresql" {
-  vpc_id = var.vpc_id
-
-  ingress {
-    description = "TLS from VPC"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "tcp"
-    cidr_blocks = ["172.31.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_db_subnet_group" "aws_subnet_group" {
+  name       = "main"
+  subnet_ids = var.aws_subnet_group
 
   tags = merge(
     {
-      Name        = "sgDatabaseServer",
+      Name        = "vault db subnet group",
       Project     = var.project,
       Environment = var.environment
     },
@@ -55,20 +12,7 @@ resource "aws_security_group" "postgresql" {
   )
 }
 
-
-resource "aws_db_subnet_group" "db_subnet_group" {
-  name       = "main"
-  subnet_ids = var.db_subnet_group
-
-  tags = {
-    Name = "My DB subnet group"
-  }
-}
-
-
-#
 # RDS resources
-#
 resource "aws_db_instance" "postgresql" {
   allocated_storage               = var.allocated_storage
   engine                          = "postgres"
@@ -90,8 +34,8 @@ resource "aws_db_instance" "postgresql" {
   # copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   multi_az                        = var.multi_availability_zone
   port                            = var.database_port
-  vpc_security_group_ids          = [aws_security_group.postgresql.id]
-  db_subnet_group_name            = aws_db_subnet_group.db_subnet_group.id
+  vpc_security_group_ids          = [aws_security_group.db_security_group.id]
+  db_subnet_group_name            = aws_db_subnet_group.aws_subnet_group.id
   parameter_group_name            = var.parameter_group
   # storage_encrypted               = var.storage_encrypted
   # monitoring_interval             = var.monitoring_interval
@@ -102,7 +46,7 @@ resource "aws_db_instance" "postgresql" {
 
   tags = merge(
     {
-      Name        = "DatabaseServer",
+      Name        = "vaultdb",
       Project     = var.project,
       Environment = var.environment
     },

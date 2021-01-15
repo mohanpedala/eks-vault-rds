@@ -1,12 +1,14 @@
+region = "us-west-2"
+
 # Project
-project = "vault"
+project = "vault-eks"
 
 environment = "dev"
 
 # Network
 vpc_id = "vpc-c80c16ac"
 
-db_subnet_group = ["subnet-83bae0f5", "subnet-7031925b"]
+aws_subnet_group = ["subnet-83bae0f5", "subnet-7031925b"]
 
 ## DB
 
@@ -57,3 +59,8 @@ multi_availability_zone = "false"
 # monitoring_interval
 
 deletion_protection = "false"
+
+tags = {
+    
+    "app" = "vault"
+}
