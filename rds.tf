@@ -1,5 +1,5 @@
-resource "aws_db_subnet_group" "aws_subnet_group" {
-  name       = "main"
+resource "aws_db_subnet_group" "db_sub_group" {
+  name       = "rds_subnet_group"
   subnet_ids = var.aws_subnet_group
 
   tags = merge(
@@ -11,6 +11,37 @@ resource "aws_db_subnet_group" "aws_subnet_group" {
     var.tags
   )
 }
+
+# Security group resources
+resource "aws_security_group" "db_security_group" {
+  vpc_id = var.vpc_id
+
+  ingress {
+    description = "tcp"
+    from_port   = 0
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    {
+      Name        = "sgvaultdb",
+      Project     = var.project,
+      Environment = var.environment
+    },
+    var.tags
+  )
+}
+
+
 
 # RDS resources
 resource "aws_db_instance" "postgresql" {
@@ -35,7 +66,7 @@ resource "aws_db_instance" "postgresql" {
   multi_az                        = var.multi_availability_zone
   port                            = var.database_port
   vpc_security_group_ids          = [aws_security_group.db_security_group.id]
-  db_subnet_group_name            = aws_db_subnet_group.aws_subnet_group.id
+  db_subnet_group_name            = aws_db_subnet_group.db_sub_group.id
   parameter_group_name            = var.parameter_group
   # storage_encrypted               = var.storage_encrypted
   # monitoring_interval             = var.monitoring_interval
@@ -52,6 +83,7 @@ resource "aws_db_instance" "postgresql" {
     },
     var.tags
   )
+  depends_on = [ aws_security_group.db_security_group, ]
 }
 
 #
